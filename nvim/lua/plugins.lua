@@ -16,6 +16,7 @@ vim.opt.rtp:prepend(lazypath)
 -- telescope {plenary}
 -- mini-pairs {standalone}
 -- smear-cursor
+-- tokyonight
 
 require("lazy").setup({
   {
@@ -35,9 +36,6 @@ require("lazy").setup({
   {
     "nvim-telescope/telescope.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
-    config = function()
-      local builtin = require("telescope.builtin")
-    end,
   },
 
   {
@@ -52,7 +50,6 @@ require("lazy").setup({
       local cmp = require("cmp")
       cmp.setup({
         sources = {
-          { name = "supermaven" },
           { name = "nvim_lsp" },
           { name = "buffer", keyword_length = 3 },
           { name = "path" },
@@ -79,16 +76,19 @@ require("lazy").setup({
     "sphamba/smear-cursor.nvim",
     opts = {
         legacy_computing_symbols_support = true,
-        stiffnes = 0.6,
-        trailing_stiffnes = 0.2,
+        trailing_stiffness = 0.2,
         damping = 0.7,
-        trailing_exponent = 2,
     },
   },
   {
-    "supermaven-inc/supermaven-nvim",
+    "folke/tokyonight.nvim",
+    lazy = false,
+    priority = 1000,
     config = function()
-      require("supermaven-nvim").setup({})
-    end,
+        require("tokyonight").setup({
+            transparent = true,
+        })
+        vim.cmd.colorscheme("tokyonight")
+    end
   },
 })

@@ -7,7 +7,7 @@ vim.keymap.set("i", "jk", "<Esc>", { desc = "Exit insert mode" })
 -- Don't want to go to cmd-line mode for this
 vim.keymap.set("n", "<leader>q", ":q!<CR>",         { desc = "Quit without saving" })
 vim.keymap.set("n", "<leader>w", ":w!<CR>",         { desc = "Force write" })
-vim.keymap.set("n", "<leader>x", ":xa!<CR>",        { desc = "Save & quit all" })
+vim.keymap.set("n", "<leader>x", ":x!<CR>",        { desc = "Save & quit" })
 vim.keymap.set("n", "<leader>h", ":nohlsearch<CR>", { desc = "Clear search highlight" })
 
 -- Better Defaults
@@ -42,7 +42,6 @@ vim.keymap.set("n", "<leader>td", function()
 end, { desc = "Toggle Diagnostics" })
 
 
-
 vim.keymap.set("n", "<leader>tt", function()
     local buf = vim.api.nvim_get_current_buf()
     local highlighter = vim.treesitter.highlighter
@@ -55,7 +54,6 @@ vim.keymap.set("n", "<leader>tt", function()
         print("Tree-sitter Enabled")
     end
 end, { desc = "Toggle Tree-sitter" })
-
 
 
 vim.keymap.set('n', '<leader>wt', function()
