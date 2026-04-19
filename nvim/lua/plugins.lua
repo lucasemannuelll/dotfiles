@@ -41,7 +41,6 @@ require("lazy").setup({
   {
     "hrsh7th/nvim-cmp",
     dependencies = {
-      "hrsh7th/cmp-nvim-lsp",
       "hrsh7th/cmp-buffer",
       "hrsh7th/cmp-path",
     },
@@ -50,7 +49,6 @@ require("lazy").setup({
       local cmp = require("cmp")
       cmp.setup({
         sources = {
-          { name = "nvim_lsp" },
           { name = "buffer", keyword_length = 3 },
           { name = "path" },
         },

@@ -6,6 +6,3 @@ require("plugins")
 
 -- KEYMAPS
 require("keymaps")
-
--- LSPs
-require("lsp")

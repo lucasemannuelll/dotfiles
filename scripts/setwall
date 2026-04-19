@@ -1,0 +1,13 @@
+#!/bin/bash
+
+DIR="$HOME/Pictures/walls"
+IMG=$(find "$DIR" -type f | shuf -n 1)
+
+qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "
+var ds = desktops();
+for (var i=0;i<ds.length;i++) {
+    var d = ds[i];
+    d.wallpaperPlugin='org.kde.image';
+    d.currentConfigGroup=['Wallpaper','org.kde.image','General'];
+    d.writeConfig('Image','file://$IMG');
+}"

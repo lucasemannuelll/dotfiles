@@ -4,7 +4,7 @@ case $- in
     *) return;;
 esac
 
-PS1='[\[\e[1;37m\]\d\[\e[m\]] \[\e[38;5;75m\] \[\e[38;5;81m\]\u ◆ \h \[\e[38;5;117m\][\W]\[\e[0m\]\$ '
+PS1='\[\e[38;2;187;154;247m\][\[\e[38;2;125;207;255m\]\D{%a %b %d}\[\e[38;2;187;154;247m\]] \[\e[38;2;166;209;137m\]\h\[\e[38;2;86;95;137m\]:\[\e[38;2;125;207;255m\]\w\[\e[0m\] '
 
 # Example aliases
 alias bashrc="nvim ~/.bashrc"
@@ -28,11 +28,13 @@ export PATH=/home/lucas/.local/bin/:/usr/local/bin:/usr/bin:/usr/local/sbin
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-export PATH=/home/lucas/.nimble/bin:$PATH
 
 export FZF_DEFAULT_COMMAND='fd --exclude venv --exclude ventoy-1.1.07-linux --exclude __pycache__ --exclude .choosenim --exclude "GOG Games"'
 
 eval "$(zoxide init bash)"
 eval "$(zoxide init --cmd j bash)"
 
-source "$HOME/.cargo/env"
+export EDITOR='nvim'
+export VISUAL='nvim'
+
+export MAN='nvim +Man'
