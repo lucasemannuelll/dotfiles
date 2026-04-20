@@ -43,19 +43,22 @@ local current = {
     filename  = nil,
     start_pos = nil,
     duration  = nil,
+    last_pos  = nil,
     recorded  = false,
 }
+
+local pos_timer = nil
 
 local function reset_state()
     current.filename  = nil
     current.start_pos = nil
     current.duration  = nil
+    current.last_pos  = nil
     current.recorded  = false
 end
 
 local function record_appearance(fname)
     local now = os.time()
-
     local safe = fname:gsub("'", "''")
 
     db_exec(string.format([[
@@ -91,7 +94,7 @@ local function record_result(fname, listened_secs, duration)
         WHERE filename = '%s';
     ]], status, status, listened_secs, safe))
 
-    mp.msg.info(string.format("[listen_stats] %s: %s (%.0f%%)", status, fname, pct))
+    mp.msg.info(string.format("%s: %s (%.0f%%)", status, fname, pct))
 end
 
 local function finalize(reason)
@@ -111,7 +114,7 @@ local function finalize(reason)
         return
     end
 
-    local pos = mp.get_property_number("time-pos") or current.start_pos or 0
+    local pos = current.last_pos or current.start_pos or 0
     local start = current.start_pos or 0
     local listened_secs = math.max(0, pos - start)
 
@@ -124,6 +127,11 @@ mp.register_event("file-loaded", function()
         finalize("file-change")
     end
 
+    if pos_timer then
+        pos_timer:kill()
+        pos_timer = nil
+    end
+
     reset_state()
 
     local fname = mp.get_property("filename/no-ext")
@@ -131,9 +139,9 @@ mp.register_event("file-loaded", function()
 
     fname = fname:match("([^/\\]+)$") or fname
 
-    current.filename = fname
+    current.filename  = fname
     current.start_pos = mp.get_property_number("time-pos") or 0
-    current.duration = mp.get_property_number("duration")
+    current.duration  = mp.get_property_number("duration")
 
     if not current.duration or current.duration <= 0 then
         mp.observe_property("duration", "number", function(name, val)
@@ -144,14 +152,27 @@ mp.register_event("file-loaded", function()
         end)
     end
 
+    pos_timer = mp.add_periodic_timer(1, function()
+        if current.filename then
+            local p = mp.get_property_number("time-pos")
+            if p then current.last_pos = p end
+        end
+    end)
+
     ensure_table()
     record_appearance(fname)
 end)
 
 mp.register_event("end-file", function(event)
     if current.filename and not current.recorded then
-        finalize("end-file:" .. (event.reason or "unknown"))    
+        finalize("end-file:" .. (event.reason or "unknown"))
     end
+
+    if pos_timer then
+        pos_timer:kill()
+        pos_timer = nil
+    end
+
     reset_state()
 end)
 
