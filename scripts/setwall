@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DIR="$HOME/Pictures/walls"
+DIR="$HOME/Pictures/Wallpaper"
 IMG=$(find "$DIR" -type f | shuf -n 1)
 
 qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "
@@ -11,3 +11,5 @@ for (var i=0;i<ds.length;i++) {
     d.currentConfigGroup=['Wallpaper','org.kde.image','General'];
     d.writeConfig('Image','file://$IMG');
 }"
+
+echo "Wallpaper is $IMG"

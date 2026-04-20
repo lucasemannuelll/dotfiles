@@ -12,16 +12,13 @@ alias mkdir='mkdir -p'
 alias ..='cd ..'
 alias ...='cd ../..'
 alias cls='clear'
-alias update='sudo dnf update -y'
-alias cpy='xsel --clipboard'
+alias update='sudo pacman -Syu'
+alias cpy='wl-copy'
 alias switch='gh auth switch'
-alias rename_script='python ~/rename_script.py'
-alias fastfetch='fastfetch -c ~/.config/fastfetch/6.jsonc'
 alias ls='ls --color --group-directories-first'
 alias ll='ls -lh'
 alias vim='nvim'
 alias playmusic='mpv --shuffle --no-video --loop-playlist=inf "$HOME/Music/"'
-alias config='/usr/bin/git --git-dir=$HOME/Repos/dotfiles/ --work-tree=$HOME'
 
 export PATH=/home/lucas/.local/bin/:/usr/local/bin:/usr/bin:/usr/local/sbin
 
