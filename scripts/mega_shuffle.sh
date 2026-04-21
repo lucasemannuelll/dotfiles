@@ -83,9 +83,14 @@ while IFS= read -r filename; do
         folder_counts["$target_folder"]=$(( folder_counts["$target_folder"] + 1 ))
         if (( folder_counts["$target_folder"] >= MAX_ITEMS )); then
             echo "  [$target_folder] reached $MAX_ITEMS items — removing from pool."
-            eligible_folders=("${eligible_folders[@]/$target_folder/}")
-            # compact out the blank slot
-            eligible_folders=("${eligible_folders[@]}")
+            # FIX: Properly rebuild the array without the target folder
+            new_eligible=()
+            for f in "${eligible_folders[@]}"; do
+                if [[ "$f" != "$target_folder" ]]; then
+                    new_eligible+=("$f")
+                fi
+            done
+            eligible_folders=("${new_eligible[@]}")
         fi
     else
         echo "ERROR: Failed to move \"$filename\"" >&2
