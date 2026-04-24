@@ -4,27 +4,52 @@
 --   partial  15% - 74%
 --   skipped  < 15%
 
+
 local DB_PATH = os.getenv("HOME") .. "/.config/mpv/listen_stats.db"
+local DEBUG = false -- Silent by default; enable for diagnostics
+local table_ensured = false
+
+
+local function debug_log(msg)
+    if DEBUG then
+        mp.msg.info(msg)
+    end
+end
+
+
+local function debug_err(msg)
+    if DEBUG then
+        mp.msg.error(msg)
+    end
+end
+
 
 local function db_exec(sql)
     local escaped = sql:gsub("'", "'\\''")
-    local cmd = string.format("sqlite3 '%s' '%s'", DB_PATH, escaped)
+    local cmd = string.format(
+        "sqlite3 '%s' '%s'",
+        DB_PATH,
+        escaped
+    )
+
     local pipe = io.popen(cmd .. " 2>&1")
 
     if not pipe then
-        mp.msg.error("[listen_stats] db_exec: failed to open pipe")
-        return nil
+        debug_err("sqlite3 command failed")
+        return
     end
 
     local out = pipe:read("*a")
     pipe:close()
 
-    if out and out ~= "" then
-        mp.msg.warn("[listen_stats] sqlite3: " .. out)
+    if out ~= "" then
+        debug_err("sqlite3: " .. out)
     end
 end
 
+
 local function ensure_table()
+    if table_ensured then return end
     db_exec([[
         CREATE TABLE IF NOT EXISTS songs (
             id          INTEGER PRIMARY KEY,
@@ -37,6 +62,8 @@ local function ensure_table()
             last_played INTEGER
         );
     ]])
+
+    table_ensured = true
 end
 
 local current = {
@@ -72,9 +99,7 @@ local function record_appearance(fname)
 end
 
 local function record_result(fname, listened_secs, duration)
-    if listened_secs < 0 then
-        listened_secs = 0
-    end
+    listened_secs = math.max(0, listened_secs)
 
     local pct = (duration > 0) and (listened_secs / duration * 100) or 0
     local status
@@ -88,20 +113,19 @@ local function record_result(fname, listened_secs, duration)
     end
 
     local safe = fname:gsub("'", "''")
+
     db_exec(string.format([[
         UPDATE songs
         SET %s = %s + 1, total_sec = total_sec + %.3f
         WHERE filename = '%s';
     ]], status, status, listened_secs, safe))
 
-    mp.msg.info(string.format("%s: %s (%.0f%%)", status, fname, pct))
+    debug_log(string.format("%s: %s (%.0f%%)", status, fname, pct))
 end
 
 local function finalize(reason)
-    if current.recorded then return end
-    if not current.filename then return end
+    if current.recorded or not current.filename then return end
 
-    local fname = current.filename
     local duration = current.duration
 
     if not duration or duration <= 0 then
@@ -109,17 +133,16 @@ local function finalize(reason)
     end
 
     if not duration or duration <= 0 then
-        mp.msg.warn(string.format("[listen_stats] skipping '%s' - duration unknown (%s)", fname, reason))
+        debug_log("not recorded (unknown duration): " .. reason)
         current.recorded = true
         return
     end
 
     local pos = current.last_pos or current.start_pos or 0
     local start = current.start_pos or 0
-    local listened_secs = math.max(0, pos - start)
 
     current.recorded = true
-    record_result(fname, listened_secs, duration)
+    record_result(current.filename, pos - start, duration)
 end
 
 mp.register_event("file-loaded", function()
@@ -144,19 +167,18 @@ mp.register_event("file-loaded", function()
     current.duration  = mp.get_property_number("duration")
 
     if not current.duration or current.duration <= 0 then
-        mp.observe_property("duration", "number", function(name, val)
+        local obs_id
+        obs_id = mp.observe_property("duration", "number", function(name, val)
             if val and val > 0 and not current.duration then
                 current.duration = val
-                mp.unobserve_property(name)
+                mp.unobserve_property(obs_id)
             end
         end)
     end
 
     pos_timer = mp.add_periodic_timer(1, function()
-        if current.filename then
-            local p = mp.get_property_number("time-pos")
-            if p then current.last_pos = p end
-        end
+        local p = mp.get_property_number("time-pos")
+        if p then current.last_pos = p end
     end)
 
     ensure_table()
@@ -164,9 +186,7 @@ mp.register_event("file-loaded", function()
 end)
 
 mp.register_event("end-file", function(event)
-    if current.filename and not current.recorded then
-        finalize("end-file:" .. (event.reason or "unknown"))
-    end
+    finalize("end-file:" .. (event.reason or "unknown"))
 
     if pos_timer then
         pos_timer:kill()
@@ -177,7 +197,5 @@ mp.register_event("end-file", function(event)
 end)
 
 mp.register_event("shutdown", function()
-    if current.filename and not current.recorded then
-        finalize("shutdown")
-    end
+    finalize("shutdown")
 end)
