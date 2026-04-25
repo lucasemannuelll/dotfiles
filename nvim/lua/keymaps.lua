@@ -1,14 +1,17 @@
 local builtin = require("telescope.builtin")
 
+
 vim.g.mapleader = " "
 
 vim.keymap.set("i", "jk", "<Esc>", { desc = "Exit insert mode" })
+
 
 -- Don't want to go to cmd-line mode for this
 vim.keymap.set("n", "<leader>q", ":q!<CR>",         { desc = "Quit without saving" })
 vim.keymap.set("n", "<leader>w", ":w!<CR>",         { desc = "Force write" })
 vim.keymap.set("n", "<leader>x", ":x!<CR>",        { desc = "Save & quit" })
 vim.keymap.set("n", "<leader>h", ":nohlsearch<CR>", { desc = "Clear search highlight" })
+
 
 -- Better Defaults
 vim.keymap.set("n", "<C-h>", "<C-w>h",  { desc = "Go to left window" })
@@ -22,6 +25,7 @@ vim.keymap.set("n", "N",     "Nzzzv",   { desc = "Prev match + center + open fol
 vim.keymap.set("v", ">",     ">gv",     { desc = "Indent right" })
 vim.keymap.set("v", "<",     "<gv",     { desc = "Outdent left" })
 vim.keymap.set("n", "U",     "<C-r>",   { desc = "Better redo" })
+
 
 -- Telescope keys
 vim.keymap.set("n", "<leader>ff", builtin.find_files,                { desc = "Find files" })
